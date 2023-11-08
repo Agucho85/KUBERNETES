@@ -1,0 +1,100 @@
+trigger:
+- none
+
+resources:
+  repositories: 
+    - repository: multtenant-root
+      type: git
+      name: multtenant-root
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+# Destroy all terraform resources
+  - stage: DestroyPlanDestroy
+    displayName: Terraform Destroy Plan
+    jobs:
+    - job: TerraformPlanDestroy
+      steps:
+       - script: |
+            git config --global url."https://$(PAT)@gaiden.visualstudio.com".insteadOf "https://gaiden.visualstudio.com"
+         displayName: 'set extra header'
+         env:
+           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+       - task: TerraformInstaller@1
+         inputs:
+           terraformVersion: 'latest'
+
+       - task: TerraformTaskV4@4
+         displayName: Terraform Init
+         inputs:
+           provider: 'aws'
+           command: 'init'
+           backendServiceAWS: 'aws-tf-use'
+           backendAWSBucketName: 'test-dirmod-eks'
+           backendAWSKey: 'terraform.tfstate'
+           workingDirectory: '$(Build.SourcesDirectory)'
+
+       - task: TerraformTaskV4@4
+         displayName: Terraform plan destroy
+         inputs:
+           provider: 'aws'
+           command: 'plan'
+           commandOptions: '-destroy -out=destroyplan.tfplan'
+           environmentServiceNameAWS: 'aws-tf-use'
+           workingDirectory: '$(Build.SourcesDirectory)'
+
+       - task: PublishPipelineArtifact@1
+         inputs:
+           targetPath: '$(Build.SourcesDirectory)/destroyplan.tfplan'
+           artifact: '$(Build.BuildId)'
+           publishLocation: 'pipeline'
+
+# Apply the destroy Plan generated in previous stage
+  - stage: TerraformApplyDestroy
+    displayName: Terraform Apply Destroy
+    dependsOn: DestroyPlanDestroy
+    jobs:
+      - deployment: TerraformApplyDestroy
+        environment: 'EKS Apply'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - script: |
+                   git config --global url."https://$(PAT)@gaiden.visualstudio.com".insteadOf "https://gaiden.visualstudio.com"
+                displayName: 'set extra header'
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+              - script: |
+                  ls -Rlh $(Pipeline.Workspace)
+                #mv $(Pipeline.Workspace)/$(Build.BuildId)/*.tfplan $(Build.SourcesDirectory)
+                displayName: Move the TFPLAN
+
+              - checkout: self
+              - task: TerraformInstaller@1
+                inputs:
+                  terraformVersion: 'latest'
+
+              - task: TerraformTaskV4@4
+                displayName: Terraform Init
+                inputs:
+                  provider: 'aws'
+                  command: 'init'
+                  backendServiceAWS: 'aws-tf-use'
+                  backendAWSBucketName: 'test-dirmod-eks'
+                  backendAWSKey: 'terraform.tfstate'
+                  workingDirectory: '$(Build.SourcesDirectory)'
+
+              - task: TerraformTaskV4@4
+                displayName: Terraform Destroy
+                inputs:
+                 provider: 'aws'
+                 command: 'apply'
+                 commandOptions: '$(Pipeline.Workspace)/$(Build.BuildId)/destroyplan.tfplan'
+                 environmentServiceNameAWS: 'aws-tf-use'
+                 workingDirectory: '$(Build.SourcesDirectory)'
+

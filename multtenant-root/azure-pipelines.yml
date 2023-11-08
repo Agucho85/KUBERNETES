@@ -1,0 +1,121 @@
+trigger:
+- main
+
+resources:
+  repositories: 
+    - repository: multtenant-root
+      type: git
+      name: multtenant-root
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+   # - job: Job4
+   #   displayName: Security Test
+   #   steps:
+     # - task: tfsec@1
+     #   inputs:
+     #     version: 'v1.26.0'
+     #     debug: true
+     #     dir: '$(Build.SourcesDirectory)/multtenant-root'
+
+# Terraform init and Validate the configuration, prepare a Plan for execution.
+  - stage: Terraform
+    displayName: Terraform Init - Validate - Plan
+    jobs:
+      - job: Job1
+        displayName: Terraform Install
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.6.2'
+
+        - script: |
+           git config --global url."https://$(PAT)@gaiden.visualstudio.com".insteadOf "https://gaiden.visualstudio.com"
+          displayName: 'set extra header'
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+ 
+        - task: TerraformTaskV4@4
+          displayName: Terraform Init
+          inputs:
+             provider: 'aws'
+             command: 'init'
+             backendServiceAWS: 'aws-tf-use'
+             backendAWSBucketName: 'test-dirmod-eks'
+             backendAWSKey: 'terraform.tfstate'
+             workingDirectory: '$(Build.SourcesDirectory)'
+   
+        - task: TerraformTaskV4@4
+          displayName: Terraform validate
+          inputs:
+            provider: 'aws'
+            command: 'validate'
+            workingDirectory: '$(Build.SourcesDirectory)'
+  
+        - task: TerraformTaskV4@4
+          displayName: Terraform plan
+          inputs:
+            provider: 'aws'
+            backendServiceAWS: 
+            command: 'plan'
+            commandOptions: '-out=applyplan.tfplan'
+            environmentServiceNameAWS: 'aws-tf-use'
+            workingDirectory: '$(Build.SourcesDirectory)'
+ 
+        - task: PublishPipelineArtifact@1
+          inputs:
+            targetPath: '$(Build.SourcesDirectory)/applyplan.tfplan'
+            artifact: '$(Build.BuildId)'
+            publishLocation: 'pipeline'
+
+# Apply the Terraform plan genreted in the previous stage
+  - stage: TerraformApply
+    displayName: Terraform Apply
+    dependsOn: Terraform
+    jobs:
+      -  deployment: TerraformApply
+         environment: 'EKS Apply'
+         strategy:
+           runOnce:
+            deploy:
+              steps:
+              - script: |
+                   git config --global url."https://$(PAT)@gaiden.visualstudio.com".insteadOf "https://gaiden.visualstudio.com"
+                displayName: 'set extra header'
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+              - script: |
+                  ls -Rlh $(Pipeline.Workspace)
+                displayName: check the TFPLAN
+
+              - checkout: self
+
+              - script: |
+                  ls -Rlh $(Build.SourcesDirectory)
+                displayName: Check all directory
+
+              - task: TerraformInstaller@1
+                inputs:
+                  terraformVersion: '1.6.2'
+
+              - task: TerraformTaskV4@4
+                displayName: Terraform Init
+                inputs:
+                  provider: 'aws'
+                  command: 'init'
+                  backendServiceAWS: 'aws-tf-use'
+                  backendAWSBucketName: 'test-dirmod-eks'
+                  backendAWSKey: 'terraform.tfstate'
+                  workingDirectory: '$(Build.SourcesDirectory)'
+
+              - task: TerraformTaskV4@4
+                displayName: Terraform Apply
+                inputs:
+                 provider: 'aws'
+                 command: 'apply'
+                 commandOptions: '$(Pipeline.Workspace)/$(Build.BuildId)/applyplan.tfplan'
+                 environmentServiceNameAWS: 'aws-tf-use'
+                 workingDirectory: '$(Build.SourcesDirectory)'
