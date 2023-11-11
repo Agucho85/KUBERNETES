@@ -1,5 +1,59 @@
 # This file contains the output variables for the IAM roles created for the EKS cluster.
-/* # EKS master role outputs
+
+/*  outputs. modulo VPC
+# VPC Output Values
+
+# VPC ID
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = module.vpc.vpc_id
+}
+
+# VPC CIDR blocks
+output "vpc_cidr_block" {
+  description = "The CIDR block of the VPC"
+  value       = module.vpc.vpc_cidr_block
+}
+
+# VPC Private Subnets
+output "private_subnets" {
+  description = "List of IDs of private subnets"
+  value       = module.vpc.private_subnets
+}
+
+# VPC Public Subnets
+output "public_subnets" {
+  description = "List of IDs of public subnets"
+  value       = module.vpc.public_subnets
+}
+
+# VPC database_subnets
+output "database_subnets" {
+  description = "List of IDs of database_subnets"
+  value       = module.vpc.database_subnets
+}
+
+# VPC database_subnet_group_name
+output "database_subnet_group_name" {
+  description = "List of IDs of database_subnet_group_name"
+  value       = module.vpc.database_subnet_group_name
+}
+
+# VPC NAT gateway Public IP
+output "nat_public_ips" {
+  description = "List of public Elastic IPs created for AWS NAT Gateway"
+  value       = module.vpc.nat_public_ips
+}
+
+# VPC AZs
+output "azs" {
+  description = "A list of availability zones spefified as argument to this module"
+  value       = module.vpc.azs
+}
+*/
+
+/* outputs. modulo iam
+# EKS master role outputs
 output "eks_master_role_name" {
   description = "IAM role name of the EKS cluster."
   value       = module.iam.eks_master_role_name
@@ -37,7 +91,8 @@ output "eks_developer_role_arn" {
 output "eks_developer_role_name" {
   description = "IAM DEVELOPER role ARN of the EKS cluster."
   value       = module.iam.eks_developer_role_name
-} */
+}
+*/
 
 # EKS Cluster Outputs
 output "cluster_id" {
@@ -106,20 +161,77 @@ output "node_group_private_version" {
   value       = module.private_node_group.node_group_private_version
 }
 
-# EBS CSI Helm Release Outputs
+/*
+output "ebs_csi_iam_policy_arn" {
+  value = modulo.iam_addons.ebs_csi_iam_policy_arn
+}
+
+output "ebs_csi_iam_policy" {
+  value = modulo.iam_addons.ebs_csi_iam_policy
+}
+
+output "ebs_csi_iam_role_arn" {
+  description = "EBS CSI IAM Role ARN"
+  value       = modulo.iam_addons.ebs_csi_iam_role_arn
+}
+
+output "cluster_autoscaler_iam_role_arn" {
+  description = "Cluster Autoscaler IAM Role ARN"
+  value       = modulo.iam_addons.cluster_autoscaler_iam_role_arn
+}
+
+output "lbc_iam_policy_arn" {
+  value = modulo.iam_addons.lbc_iam_policy_arn
+}
+
+output "lbc_iam_role_arn" {
+  description = "AWS Load Balancer Controller IAM Role ARN"
+  value       = modulo.iam_addons.lbc_iam_role_arn
+}
+
+output "cni_iam_role_arn" {
+  description = "CNI IAM Role ARN"
+  value       = modulo.iam_addons.cni_iam_role_arn
+}
+
+output "cni_iam_policy_arn" {
+  value = modulo.iam_addons.cni_iam_policy_arn
+}
+
+*/
+# Module CNI output
+output "enable_prefix_delegation" {
+  description = "CMD for enable prefix delegation"
+  value = module.cni.enable_prefix_delegation
+}
+
+# EBS CSI Helm Release Outputs for ebs_csi_helm_metadata
 output "ebs_csi_helm_metadata" {
   description = "Metadata Block outlining status of the deployed release."
   value       = module.ebs_autoscaler.ebs_csi_helm_metadata
 }
 
-# Helm Release Outputs
+# Helm Release Outputs for cluster_autoscaler_helm_metadata
 output "cluster_autoscaler_helm_metadata" {
   description = "Metadata Block outlining status of the deployed release."
   value       = module.ebs_autoscaler.cluster_autoscaler_helm_metadata
 }
 
-# Helm Release Outputs
+# Helm Release Outputs for lbc_helm_metadata
 output "lbc_helm_metadata" {
   description = "Metadata Block outlining status of the deployed release."
   value       = module.loadbalancer.lbc_controller_metadata
 }
+
+# Helm Release Outputs for metrics_server_helm_metadata
+output "metrics_server_helm_metadata" {
+  description = "Metadata Block outlining status of the deployed release."
+  value       = module.ebs_autoscaler.metrics_server_helm_metadata
+}
+
+/* module namespaces
+output "namespaces" {
+  description = "Namespaces created"
+  value       = module.namespaces.namespaces
+}
+*/

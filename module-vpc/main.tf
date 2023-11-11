@@ -1,3 +1,12 @@
+# Modulo que crea la VPC y todo los relacionado con el networking del EKS. Debe ser el primer modulo llamado por el root module.
+# A diferencia de los otro child modulos, este no crea el recurso directamente sino que utiliza un modulo ya especificado en AWS.
+
+# Get AWS Account ID
+data "aws_caller_identity" "current" {}
+output "account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
 # AWS Availability Zones Datasource
 data "aws_availability_zones" "available" {
 }
@@ -5,13 +14,13 @@ data "aws_availability_zones" "available" {
 # Create VPC Terraform Module
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.11.0"
+  version= "5.1.2"
   #version = "~> 3.11"
 
   # VPC Basic Details
-  name            = local.eks_cluster_name
+  name            = "${var.project}-${var.cluster_name}"
   cidr            = var.vpc_cidr_block
-  azs             = data.aws_availability_zones.available.names
+  azs             = var.vpc_availability_zones
   public_subnets  = var.vpc_public_subnets
   private_subnets = var.vpc_private_subnets
 

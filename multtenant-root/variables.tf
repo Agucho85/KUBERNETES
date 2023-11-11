@@ -136,51 +136,70 @@ variable "namespace" {
   ]
 }
 
+/*
 # # VPC Input Variables
-# variable "vpc_id" {
-#   description = "ID of the VPC."
-#   type        = string
-#   default     = data.aws_vpc.vpc_id.id
-# }
+variable "vpc_cidr_block" {
+  description = "VPC CIDR Block"
+  type        = string
+  default     = "10.0.0.0/16"
+}
 
-# variable "vpc_cidr_block" {
-#   description = "CIDR block for the VPC."
-#   type        = string
-#   default     = data.aws_vpc.vpc_cidr_block.cidr_block
-# }
+# VPC Availability Zones
+variable "vpc_availability_zones" {
+  description = "VPC Availability Zones"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
+}
 
-# variable "vpc_region" {
-#   description = "Region in which VPC is created."
-#   type        = string
-#   default     = data.aws_vpc.region.region
-# }
 
-# variable "vpc_public_subnets" {
-#   description = "List of public subnets in the VPC."
-#   type        = list(string)
-#   default     = data.aws_subnet_ids.vpc_public_subnets.ids
-# }
+# VPC Public Subnets
+variable "vpc_public_subnets" {
+  description = "VPC Public Subnets"
+  type        = list(string)
+  default     = ["10.0.101.0/24", "10.0.102.0/24"]
+}
 
-# variable "vpc_private_subnets" {
-#   description = "List of private subnets in the VPC."
-#   type        = list(string)
-#   default     = data.aws_subnet_ids.vpc_private_subnets.ids
-# }
+# VPC Private Subnets
+variable "vpc_private_subnets" {
+  description = "VPC Private Subnets"
+  type        = list(string)
+  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+}
 
-# variable "vpc_database_subnets" {
-#   description = "List of database subnets in the VPC."
-#   type        = list(string)
-#   default     = data.aws_subnet_ids.database_subnets.ids
-# }
 
-# variable "vpc_database_subnet_group" {
-#   description = "Database subnet group in the VPC."
-#   type        = string
-#   default     = data.aws_db_subnet_group.database_subnet_group.name
-# }
+# VPC Database Subnets
+variable "vpc_database_subnets" {
+  description = "VPC Database Subnets"
+  type        = list(string)
+  default     = ["10.0.151.0/24", "10.0.152.0/24"]
+}
 
-# variable "nat_gateway_ips" {
-#   description = "List of NAT Gateway IPs in the VPC."
-#   type        = list(string)
-#   default     = data.aws_nat_gateway_ids.ngs.ids
-# }
+# VPC Create Database Subnet Group (True / False)
+variable "vpc_create_database_subnet_group" {
+  description = "VPC Create Database Subnet Group"
+  type        = bool
+  default     = true
+}
+
+# VPC Create Database Subnet Route Table (True or False)
+variable "vpc_create_database_subnet_route_table" {
+  description = "VPC Create Database Subnet Route Table"
+  type        = bool
+  default     = true
+}
+
+
+# VPC Enable NAT Gateway (True or False) 
+variable "vpc_enable_nat_gateway" {
+  description = "Enable NAT Gateways for Private Subnets Outbound Communication"
+  type        = bool
+  default     = true
+}
+
+# VPC Single NAT Gateway (True or False)
+variable "vpc_single_nat_gateway" {
+  description = "Enable only single NAT Gateway in one Availability Zone to save costs"
+  type        = bool
+  default     = true
+}
+*/

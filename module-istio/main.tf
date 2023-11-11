@@ -1,3 +1,6 @@
+# Modulo no esta termiando, no funciona todavia.
+# Debe ser llamado por el root module despues de creado el modulo de grupo d enodos privados.
+
 # resource "kubernetes_namespace" "istio-system" {
 #   metadata {
 #     annotations = {

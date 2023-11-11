@@ -1,3 +1,6 @@
+# Modulo que crea los recursos: el grupo de nodos privados, el rbac del cluster.
+# Debe ser llamado por el root module despues de creado el eks y los addons.
+
 # Get AWS Account ID
 data "aws_caller_identity" "current" {}
 output "account_id" {
@@ -7,6 +10,7 @@ data "aws_ssm_parameter" "latest_eks_optimized_ami" {
   name = "/aws/service/eks/optimized-ami/${var.cluster_version}/amazon-linux-2/recommended/image_id"
 }
 
+# This set-up the template for the nodes in the private gruop, it uses the latest vm-template from AWS optimze for EKS and the user_data.tpl to configure the posibility to have more ips in each node for more pods to be deploy in them. Limitation you can not set SPOT instances with a template like this.
 resource "aws_launch_template" "test_template" {
   name_prefix   = "test_template"
   image_id      = data.aws_ssm_parameter.latest_eks_optimized_ami.value
@@ -18,10 +22,6 @@ resource "aws_launch_template" "test_template" {
       volume_type = "gp2"
     }
   }
-  # Only necesary if you  are setting-up SPOT nodes
-  # instance_market_options {
-  #   market_type = var.capacity_type_private
-  # }
 
   user_data = base64encode(templatefile("${path.module}/user_data.tpl", { max_pods = 110, cluster = "${var.project}-${var.cluster_name}"}))
 }
@@ -48,14 +48,11 @@ resource "aws_eks_node_group" "eks_ng_private" {
     id      = aws_launch_template.test_template.id
     version = "$Latest"
   }
-  # Ensure that IAM Role permissions are created before and deleted after EKS Node Group handling.
-  # Otherwise, EKS will not be able to properly delete EC2 Instances and Elastic Network Interfaces.
-  # depends_on = [kubernetes_config_map_v1.aws_auth
-  # ]
+
   tags = merge(local.common_tags,
     {
       Name = "Private-Node-Group"
-      # Cluster Autoscaler Tags
+      # Cluster Autoscaler Tags - if karpenter is implemented this should be modify.
       "k8s.io/cluster-autoscaler/${var.project}-${var.cluster_name}" = "owned"
       "k8s.io/cluster-autoscaler/enabled"                            = "TRUE"
   })

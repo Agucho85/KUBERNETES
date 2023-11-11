@@ -1,3 +1,7 @@
+# Modulo crea el load balancer.
+# Debe ser llamado por el root module despues de creado el modulo de grupo d enodos privados, dsps de los modulo de iam-addons.
+# Tener en cuenta que el recurso de lb desplajado con helm utiliza imagenes oficiales de AWS, que puede variar de acuerdo a la region en donde se despliegue el eks, por lo cual se debe modiicar la linea 25.
+
 # Get AWS Account ID
 data "aws_caller_identity" "current" {}
 output "account_id" {

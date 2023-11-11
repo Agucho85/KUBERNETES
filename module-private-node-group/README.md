@@ -1,20 +1,45 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+### Child Module ###
+Contiene los siguientes archivos:
+1) .gitignore:
+    Configurado para poder validar su configuracion de Terraform y que no suba al git los archivos nuevos de terra.
+2) locals.tf:
+    Archivo con variables locales para utilizalas como tags o parte del nombre del cluster
+        # Define Local Values in Terraform
+        locals {
+          common_tags = {
+            project     = var.project
+            environment = var.environment
+            managed_by  = "terraform"
+          }
+        }  
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+3) main.tf:
+    Contiene la configuracion principal del module, sus recursos
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+4) outputs.tf:
+    Aqui podemos exportar determinados datos hacia el root module y de ahi porder utilizarlo en otros child modules posteriores
+    
+5) variables.tf:
+    Contiene variables.
+        En general no tienen contenido, que deben ser completadas en el root module.
+    Ej:
+    variable "aws_region" {
+      description = "Region in which AWS Resources to be created"
+      type        = string
+    }
+    Las que tiene contenido, no hace falta cargarlas en el root module, esto podria implicar un limitación en el root module, es utilizado generalmente para que determinados datos no puedan ser cambiados por desarrolladores al momento de levantar recusros.
+    Ej:
+    variable "aws_region" {
+      description = "Region in which AWS Resources to be created"
+      type        = string
+      default     = "us-east-1"
+    }
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+6) ami-datasoruce.tf
+    Toma la ultima imagen de AWS optimizada para EKS y la utiliza para el despligue de los nodos.
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+7) configmap-clusterrole.tf
+    Configura el RBAC dentro del EKS, seria buenos separarlo en su propio modulo como siguiente paso.
+    
+8) user_data.tpl
+    Script para aplicar configuraciones en el boot de los nodos

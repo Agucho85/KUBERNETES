@@ -1,19 +1,12 @@
+# Modulo que crea con helm los recursos: CSI-EBS, autoscaler y metrics.
+# Debe ser llamado por el root module despues de creado el grupo de nodos privados.
+# Tener en cuenta que el recurso de EBS CSI desplajado con helm utiliza imagenes oficiales de AWS, que puede variar de acuerdo a la region en donde se despliegue el eks, por lo cual se debe modiicar la linea 33.
+
 # Get AWS Account ID
 data "aws_caller_identity" "current" {}
 output "account_id" {
   value = data.aws_caller_identity.current.account_id
 }
-
-#### EBS #####
-# Datasource: EBS CSI IAM Policy get from EBS GIT Repo (latest) > Este hace un http get del repo y trae la respuesta
-# data "http" "ebs_csi_iam_policy" {
-#   url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-ebs-csi-driver/master/docs/example-iam-policy.json"
-
-#   # Optional request headers
-#   request_headers = {
-#     Accept = "application/json"
-#   }
-# }
 
 # Install EBS CSI Driver using HELM
 # Resource: Helm Release 
@@ -44,7 +37,6 @@ resource "helm_release" "ebs_csi_driver" {
   }
 
 }
-
 
 # Install Cluster Autoscaler using HELM
 # Resource: Helm Release 
@@ -92,4 +84,17 @@ resource "helm_release" "cluster_autoscaler_release" {
     name  = "extraArgs.scan-interval"
     value = "10s"
   }
+}
+
+# Install Kubernetes Metrics Server using HELM
+# Resource: Helm Release 
+resource "helm_release" "metrics_server_release" {
+  name       = "${var.project}-${var.cluster_name}-metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  namespace  = "kube-system"
+
+  depends_on = [
+    helm_release.ebs_csi_driver
+  ]
 }
