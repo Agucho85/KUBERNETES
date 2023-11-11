@@ -32,20 +32,14 @@ variable "users_admin" {
   description = "User to add as admin in eks."
   type        = set(string)
   default = [
-    "agustin.ahumada@dirmod.com",
-    "agustin.manessi@dirmod.com",
-    "diego.miguel@dirmod.com"
-    # "Terraform-CREAR!"
+    "bar@foo.com"
   ]
 }
 variable "users_developers" {
   description = "User to add as admin in eks."
   type        = set(string)
   default = [
-    "alejandro.alazraqui@dirmod.com",
-    "ramon.carrasquero@dirmod.com",
-    "roberto.company@dirmod.com",
-    "anibal.gil.bermudez@dirmod.com"
+    "bar@foo.com"
   ]
 }
 
@@ -53,7 +47,7 @@ variable "users_developers" {
 variable "cluster_name" {
   description = "Name of the EKS cluster. Also used as a prefix in names of related resources."
   type        = string
-  default     = "test44"
+  default     = "test"
 }
 
 variable "cluster_service_ipv4_cidr" {
@@ -104,7 +98,7 @@ variable "disk_size_private" {
 variable "instance_type_private" {
   description = "Especify the type of the EC2 do you need"
   type        = string
-  default     = "t3.medium"
+  default     = "t3.small"
 }
 
 variable "desired_size_private" {
@@ -129,10 +123,7 @@ variable "namespace" {
   description = "Especify the namespace to create"
   type        = list(string)
   default = [
-    "aysa",
-    "aolas",
-    "ocp",
-    "legal-run"
+    "foo"
   ]
 }
 
