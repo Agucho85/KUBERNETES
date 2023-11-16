@@ -17,7 +17,7 @@ variable "environment" {
 variable "project" {
   description = "Business Division in the large organization this Infrastructure belongs"
   type        = string
-  default     = "dirmod"
+  default     = "project"
 }
 
 # OIDC ROOT CA Thumbprint - valid until 2037
