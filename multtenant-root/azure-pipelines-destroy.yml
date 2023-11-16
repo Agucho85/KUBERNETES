@@ -18,7 +18,7 @@ stages:
     - job: TerraformPlanDestroy
       steps:
        - script: |
-            git config --global url."https://$(PAT)@gaiden.visualstudio.com".insteadOf "https://gaiden.visualstudio.com"
+            git config --global url."https://$(PAT)@***.visualstudio.com".insteadOf "https://**.visualstudio.com"
          displayName: 'set extra header'
          env:
            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -64,7 +64,7 @@ stages:
             deploy:
               steps:
               - script: |
-                   git config --global url."https://$(PAT)@gaiden.visualstudio.com".insteadOf "https://gaiden.visualstudio.com"
+                   git config --global url."https://$(PAT)@**.visualstudio.com".insteadOf "https://**.visualstudio.com"
                 displayName: 'set extra header'
                 env:
                   SYSTEM_ACCESSTOKEN: $(System.AccessToken)
